@@ -66,7 +66,7 @@ export default function AdminZonas() {
             value={form.municipios} onChange={e => setForm({...form, municipios: e.target.value})}
             required
         />
-        <button type="submit">{editId ? "Actualizar" : "Agregar"}</button>
+        <button type="submit">{editId ? "Actualizar" : "Agregar Zona"}</button>
         {editId && <button type="button" className="btn-cancel" onClick={() => {setEditId(null); setForm({departamento:"", tarifa:"", municipios:""})}}>Cancelar</button>}
       </form>
 

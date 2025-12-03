@@ -1,8 +1,8 @@
 import React, { useEffect, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./AdminLayout.css";
-import { FaBox, FaTags, FaHome, FaClipboardList, FaTruck, FaTicketAlt, FaImages, FaUsers } from "react-icons/fa";
-import { AuthContext } from "../context/AuthContext"; // Usamos Contexto en lugar de API directa
+import { FaBox, FaTags, FaHome, FaClipboardList, FaTruck, FaTicketAlt, FaImages, FaUsers, FaMapMarkedAlt } from "react-icons/fa"; // <--- AGREGADO FaMapMarkedAlt
+import { AuthContext } from "../context/AuthContext";
 
 export default function AdminLayout({ children }) {
   const location = useLocation();
@@ -17,7 +17,7 @@ export default function AdminLayout({ children }) {
     }
   }, [isAdmin, cargandoAuth, navigate]);
 
-  if (cargandoAuth) return null; // Esperar a que cargue el usuario
+  if (cargandoAuth) return null;
 
   return (
     <div className="admin-layout">
@@ -61,6 +61,12 @@ export default function AdminLayout({ children }) {
             <FaTruck /> <span>Pedidos</span>
           </Link>
 
+          {/* --- NUEVO: ZONAS DE ENVÍO --- */}
+          <Link to="/admin/zonas" className={location.pathname.startsWith("/admin/zonas") ? "admin-link active" : "admin-link"}>
+            <FaMapMarkedAlt /> <span>Zonas y Tarifas</span>
+          </Link>
+          {/* ----------------------------- */}
+
           <Link to="/admin/cupones" className={location.pathname.startsWith("/admin/cupones") ? "admin-link active" : "admin-link"}>
             <FaTicketAlt /> <span>Cupones</span>
           </Link>
@@ -69,7 +75,6 @@ export default function AdminLayout({ children }) {
              <FaImages /> <span>Carrusel</span>
           </Link>
 
-          {/* --- SOLO VISIBLE PARA EL SUPER ADMIN --- */}
           {usuario?.role === "SUPER_ADMIN" && (
               <>
                 <span className="admin-menu-section" style={{color:'#fbbf24'}}>Seguridad</span>
