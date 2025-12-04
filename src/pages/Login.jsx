@@ -21,9 +21,13 @@ export default function Login() {
       navigate("/");
     } catch (err) {
       console.error(err);
-      setError("Correo o contraseña incorrectos.");
+      
+      if (err.response && err.response.data && err.response.data.error) {
+        setError(err.response.data.error);
+      } else {
+        setError("Error al iniciar sesión. Intenta de nuevo.");
+      }
     }
-  }
 
   return (
     <div className="auth-page">
