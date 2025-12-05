@@ -8,7 +8,7 @@ export default function Login() {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState(""); 
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -21,13 +21,14 @@ export default function Login() {
       navigate("/");
     } catch (err) {
       console.error(err);
-      
+
       if (err.response && err.response.data && err.response.data.error) {
         setError(err.response.data.error);
       } else {
         setError("Error al iniciar sesión. Intenta de nuevo.");
       }
     }
+  }
 
   return (
     <div className="auth-page">
@@ -60,9 +61,9 @@ export default function Login() {
             Entrar
           </button>
         </form>
-        <div style={{marginTop:'15px', textAlign:'center', fontSize:'0.9rem'}}>
-   <Link to="/recuperar" style={{color:'#64748b', textDecoration:'none'}}>¿Olvidaste tu contraseña?</Link>
-</div>
+        <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '0.9rem' }}>
+          <Link to="/recuperar" style={{ color: '#64748b', textDecoration: 'none' }}>¿Olvidaste tu contraseña?</Link>
+        </div>
 
         <p className="auth-footer-text">
           ¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link>
@@ -70,5 +71,4 @@ export default function Login() {
       </div>
     </div>
   );
-}
 }
