@@ -10,8 +10,14 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
+  // --- AÑADE ESTO ---
+  console.log("⚡ [INTERCEPTOR] Intentando llamar a:", config.url);
+  console.log("⚡ [INTERCEPTOR] Token en LocalStorage:", token ? "SÍ (empieza con " + token.substring(0, 5) + ")" : "❌ NO (es null/undefined)");
+  // ------------------
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    // --- Y ESTO ---
+    console.log("⚡ [INTERCEPTOR] Header añadido:", config.headers.Authorization);
   }
   return config;
 });
