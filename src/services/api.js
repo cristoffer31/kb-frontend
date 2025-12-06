@@ -6,7 +6,7 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-// Interceptor de SOLICITUD (Ya lo tienes)
+// Interceptor de Solicitud (Ya lo tienes)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -15,19 +15,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// --- AGREGA ESTO: Interceptor de RESPUESTA ---
+// --- AGREGA ESTE INTERCEPTOR DE RESPUESTA ---
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Si el error es 401 (No autorizado / Token vencido o malo)
+    // Si el servidor dice "401 Unauthorized" (Token vencido o malo)
     if (error.response && error.response.status === 401) {
-      console.warn("⚠️ Sesión caducada o token inválido. Cerrando sesión...");
+      console.warn("⚠️ Sesión inválida. Cerrando sesión...");
 
-      // 1. Limpiar basura local
+      // Borramos el token malo
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      // 2. Redirigir al login (solo si no estamos ya ahí)
+      // Opcional: Redirigir al login si no estamos ya ahí
       if (!window.location.pathname.includes("/login")) {
         window.location.href = "/login";
       }
@@ -35,6 +35,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-// ---------------------------------------------
 
 export default api;
