@@ -1,25 +1,40 @@
 import axios from "axios";
 
-// 1. Leemos la variable de entorno. 
-// Si no existe (por error), usa localhost como respaldo.
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
 
 const api = axios.create({
   baseURL: API_URL,
 });
 
+// Interceptor de SOLICITUD (Ya lo tienes)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  // --- AÑADE ESTO ---
-  console.log("⚡ [INTERCEPTOR] Intentando llamar a:", config.url);
-  console.log("⚡ [INTERCEPTOR] Token en LocalStorage:", token ? "SÍ (empieza con " + token.substring(0, 5) + ")" : "❌ NO (es null/undefined)");
-  // ------------------
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    // --- Y ESTO ---
-    console.log("⚡ [INTERCEPTOR] Header añadido:", config.headers.Authorization);
   }
   return config;
 });
+
+// --- AGREGA ESTO: Interceptor de RESPUESTA ---
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Si el error es 401 (No autorizado / Token vencido o malo)
+    if (error.response && error.response.status === 401) {
+      console.warn("⚠️ Sesión caducada o token inválido. Cerrando sesión...");
+
+      // 1. Limpiar basura local
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      // 2. Redirigir al login (solo si no estamos ya ahí)
+      if (!window.location.pathname.includes("/login")) {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+// ---------------------------------------------
 
 export default api;
