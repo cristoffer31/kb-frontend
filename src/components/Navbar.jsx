@@ -1,12 +1,10 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
 import "./Navbar.css";
-import { 
-  FaShoppingCart, FaUser, FaBars, FaTimes, FaSearch, 
-  FaUserCircle, FaBoxOpen, FaSignOutAlt, FaChevronDown, FaCog 
-} from "react-icons/fa";
+import { FaShoppingCart, FaUser, FaBars, FaTimes, FaSearch, FaUserCircle, FaBoxOpen, FaSignOutAlt, FaChevronDown, FaCog } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { CarritoContext } from "../context/CarritoContext";
+import { useEmpresa } from "../context/EmpresaContext"; // Importar contexto
 import { buscarProductos } from "../services/productoService";
 
 function Navbar() {
@@ -14,94 +12,69 @@ function Navbar() {
   const [search, setSearch] = useState("");
   const [sugerencias, setSugerencias] = useState([]);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
-  
-  // Estado menú usuario
   const [showUserMenu, setShowUserMenu] = useState(false);
-  // Ref para controlar el tiempo de cierre
   const closeTimeoutRef = useRef(null);
 
   const navigate = useNavigate();
   const { usuario, isLogged, isAdmin, logout } = useContext(AuthContext);
   const { totalItems } = useContext(CarritoContext);
-  
+  const { empresaActual } = useEmpresa(); // Usar empresa actual
+
   const searchRef = useRef(null);
+  
+  // Prefijo de URL (ej: /kb, /kpbm)
+  const prefix = `/${empresaActual.slug}`;
 
-  // --- FUNCIONES PARA EL MENÚ FLOTANTE (FIX) ---
-  const handleMenuEnter = () => {
-    // Si había un cierre pendiente, lo cancelamos porque el usuario volvió
-    if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current);
-    }
-    setShowUserMenu(true);
-  };
+  const handleMenuEnter = () => { if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current); setShowUserMenu(true); };
+  const handleMenuLeave = () => { closeTimeoutRef.current = setTimeout(() => setShowUserMenu(false), 300); };
 
-  const handleMenuLeave = () => {
-    // Esperamos un poco antes de cerrar para dar tiempo a mover el mouse
-    closeTimeoutRef.current = setTimeout(() => {
-        setShowUserMenu(false);
-    }, 300); // 300ms de gracia
-  };
-  // ---------------------------------------------
-
-  // --- BUSCADOR ---
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (search.trim().length > 1) {
         try {
-          const resultados = await buscarProductos(search);
-          const lista = resultados.content || (Array.isArray(resultados) ? resultados : []);
-          setSugerencias(lista.slice(0, 5)); 
+          // Buscamos solo en la empresa actual
+          const resultados = await buscarProductos(search, null, empresaActual.id);
+          setSugerencias((resultados.content || []).slice(0, 5)); 
           setMostrarSugerencias(true);
         } catch (error) { setSugerencias([]); }
-      } else {
-        setSugerencias([]);
-        setMostrarSugerencias(false);
-      }
+      } else { setSugerencias([]); setMostrarSugerencias(false); }
     }, 300);
     return () => clearTimeout(delayDebounceFn);
-  }, [search]);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setMostrarSugerencias(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [search, empresaActual]);
 
   const handleSearch = () => {
     if (search.trim()) {
-      navigate(`/productos?buscar=${encodeURIComponent(search)}`);
+      navigate(`${prefix}/productos?buscar=${encodeURIComponent(search)}`);
       setOpen(false); setMostrarSugerencias(false);
     }
   };
-  const handleKeyDown = (e) => { if (e.key === "Enter") handleSearch(); };
+
   const irAProducto = (id) => {
-    navigate(`/producto/${id}`);
-    setSearch(""); setMostrarSugerencias(false); setOpen(false);
+      // Navegamos manteniendo la empresa actual en la URL
+      navigate(`${prefix}/producto/${id}`);
+      setSearch(""); setMostrarSugerencias(false);
   };
 
   return (
     <header className="navbar-container">
       <div className="topbar">
-        Envíos rápidos • Productos premium de higiene y estilo
+        Envíos rápidos • {empresaActual.heroTitle}
       </div>
 
       <nav className="navbar">
-        <Link className="navbar-logo" to="/">
-          <img src="/kb_logo_M.png" alt="KB Collection" className="navbar-logo-img" />
+        <Link className="navbar-logo" to={prefix}>
+          {/* Logo dinámico */}
+          <img src={empresaActual.logo} alt={empresaActual.nombre} className="navbar-logo-img" />
         </Link>
 
         <div className="navbar-search" ref={searchRef}>
           <div className="search-wrapper">
             <input
                 type="text"
-                placeholder="Buscar productos..."
+                placeholder={`Buscar en ${empresaActual.nombre}...`}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={handleKeyDown}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 onFocus={() => search.length > 1 && setMostrarSugerencias(true)}
             />
             <button className="search-btn" onClick={handleSearch}><FaSearch /></button>
@@ -118,17 +91,15 @@ function Navbar() {
                         </div>
                     </div>
                 ))}
-                <div className="ver-todos" onClick={handleSearch}>Ver todos los resultados</div>
             </div>
           )}
         </div>
 
         <div className={`navbar-links ${open ? "active" : ""}`}>
-          <Link to="/" onClick={() => setOpen(false)}>Inicio</Link>
-          <Link to="/productos" onClick={() => setOpen(false)}>Tienda</Link>
-          <Link to="/ofertas" onClick={() => setOpen(false)}>Ofertas</Link>
+          <Link to={prefix} onClick={() => setOpen(false)}>Inicio</Link>
+          <Link to={`${prefix}/productos`} onClick={() => setOpen(false)}>Catálogo</Link>
           <Link to="/contacto" onClick={() => setOpen(false)}>Contacto</Link>
-          {isAdmin && <Link to="/admin" className="admin-nav-link" onClick={() => setOpen(false)}>Panel Admin</Link>}
+          {isAdmin && <Link to="/admin" className="admin-nav-link" onClick={() => setOpen(false)}>Admin</Link>}
         </div>
 
         <div className="navbar-icons">
@@ -138,51 +109,22 @@ function Navbar() {
           </Link>
 
           {!isLogged ? (
-            <Link to="/login" className="login-btn-nav">
-                <FaUser /> Iniciar Sesión
-            </Link>
+            <Link to="/login" className="login-btn-nav"><FaUser /> Ingresar</Link>
           ) : (
-            // --- MENÚ CON RETARDO ---
-            <div 
-                className="user-dropdown-container" 
-                onMouseEnter={handleMenuEnter} 
-                onMouseLeave={handleMenuLeave}
-            >
+            <div className="user-dropdown-container" onMouseEnter={handleMenuEnter} onMouseLeave={handleMenuLeave}>
               <button className="user-btn-trigger">
-                  <FaUserCircle className="avatar-icon"/>
-                  <span className="user-name-nav">{usuario?.nombre?.split(' ')[0]}</span>
-                  <FaChevronDown className="chevron-icon"/>
+                  <FaUserCircle className="avatar-icon"/> <span className="user-name-nav">{usuario?.nombre?.split(' ')[0]}</span> <FaChevronDown className="chevron-icon"/>
               </button>
-
               {showUserMenu && (
                   <div className="user-dropdown-menu">
-                      <div className="dropdown-header">
-                          <strong>Hola, {usuario?.nombre?.split(' ')[0]}</strong>
-                          <small>{usuario?.email}</small>
-                      </div>
-                      
-                      <Link to="/perfil" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
-                          <FaCog /> Mi Perfil
-                      </Link>
-                      
-                      <Link to="/mis-pedidos" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
-                          <FaBoxOpen /> Mis Pedidos
-                      </Link>
-                      
-                      <div className="dropdown-divider"></div>
-                      
-                      <button className="dropdown-item logout" onClick={logout}>
-                          <FaSignOutAlt /> Cerrar Sesión
-                      </button>
+                      <div className="dropdown-header"><strong>Hola, {usuario?.nombre}</strong></div>
+                      <Link to="/mis-pedidos" className="dropdown-item"><FaBoxOpen /> Mis Pedidos</Link>
+                      <button className="dropdown-item logout" onClick={logout}><FaSignOutAlt /> Salir</button>
                   </div>
               )}
             </div>
-            // -----------------------
           )}
-
-          <button className="hamburger" onClick={() => setOpen(!open)}>
-            {open ? <FaTimes /> : <FaBars />}
-          </button>
+          <button className="hamburger" onClick={() => setOpen(!open)}>{open ? <FaTimes /> : <FaBars />}</button>
         </div>
       </nav>
     </header>

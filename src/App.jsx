@@ -1,102 +1,127 @@
 import React from "react";
-import { Routes, Route, useLocation } from "react-router-dom"; 
+import { Routes, Route, Navigate, useLocation } from "react-router-dom"; 
 
-import Navbar from "./components/Navbar.jsx";
-import Footer from "./components/Footer.jsx";
+// Contextos
+import { AuthProvider } from "./context/AuthContext";
+import { CarritoProvider } from "./context/CarritoContext";
+import { EmpresaProvider } from "./context/EmpresaContext"; // <--- IMPORTANTE
 
-import Home from "./pages/Home.jsx";
-import Productos from "./pages/Productos.jsx";
-import ProductoDetalle from "./pages/ProductoDetalle.jsx";
-import Carrito from "./pages/Carrito.jsx";
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
-import Checkout from "./pages/Checkout.jsx"; 
-import MisPedidos from "./pages/MisPedidos.jsx";
-import Ofertas from "./pages/Ofertas.jsx";
-import Verificar from "./pages/Verificar.jsx";
+// Componentes Globales
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
-import AdminLayout from "./admin/AdminLayout.jsx";
-import AdminProductos from "./admin/AdminProductos.jsx";
-import AdminCategorias from "./admin/AdminCategorias.jsx";
-import AdminInventario from "./admin/AdminInventario.jsx";
-import AdminPedidos from "./admin/AdminPedidos.jsx";
-import AdminDashboard from "./admin/AdminDashboard.jsx";
-import AdminCupones from "./admin/AdminCupones.jsx";
+// Layouts por Empresa
+import KBLayout from "./apps/kb/KBLayout";
+import KPBMLayout from "./apps/kpbm/KPBMLayout";
+import SabesaLayout from "./apps/sabesa/SabesaLayout";
 
-import { RequireAuth } from "./components/RequireAuth.jsx";
-import { RequireAdmin } from "./components/RequireAdmin.jsx";
+// Homes Específicos
+import HomeKB from "./apps/kb/pages/HomeKB";
+import HomeKPBM from "./apps/kpbm/pages/HomeKPBM";
+import HomeSabesa from "./apps/sabesa/pages/HomeSabesa";
 
-import Recuperar from "./pages/Recuperar.jsx";
-import Restablecer from "./pages/Restablecer.jsx";
-import Perfil from "./pages/Perfil.jsx";
-import Contacto from "./pages/Contacto.jsx";
-import AdminCarousel from "./admin/AdminCarousel.jsx";
+// Páginas Compartidas
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Carrito from "./pages/Carrito";
+import Checkout from "./pages/Checkout";
+import MisPedidos from "./pages/MisPedidos";
+import Productos from "./pages/Productos"; 
+import ProductoDetalle from "./pages/ProductoDetalle";
+import Contacto from "./pages/Contacto";
 
-import AdminZonas from "./admin/AdminZonas.jsx";
-import AdminUsuarios from "./admin/AdminUsuarios.jsx";
+// Admin
+import AdminLayout from "./admin/AdminLayout";
+import AdminDashboard from "./admin/AdminDashboard";
+import AdminProductos from "./admin/AdminProductos";
+import AdminCategorias from "./admin/AdminCategorias";
+import AdminInventario from "./admin/AdminInventario";
+import AdminPedidos from "./admin/AdminPedidos";
+import AdminCupones from "./admin/AdminCupones";
+import AdminCarousel from "./admin/AdminCarousel";
+import AdminZonas from "./admin/AdminZonas";
+import AdminUsuarios from "./admin/AdminUsuarios";
+
+import { RequireAuth } from "./components/RequireAuth";
+import { RequireAdmin } from "./components/RequireAdmin";
 
 function App() {
   const location = useLocation();
-  
-  // Detectar si estamos en una ruta de administrador
   const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
     <div className="app-container">
-      
-      {/* Solo mostramos Navbar si NO es admin */}
-      {!isAdminRoute && <Navbar />}
-
-      {/* Si es admin, quitamos la clase app-main para que use su propio layout completo */}
-      <main className={isAdminRoute ? "" : "app-main"}>
-        <Routes>
-          {/* --- PÚBLICAS --- */}
-          <Route path="/" element={<Home />} />
-          <Route path="/productos" element={<Productos />} />
-          <Route path="/ofertas" element={<Ofertas />} />
-          <Route path="/producto/:id" element={<ProductoDetalle />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/verificar" element={<Verificar />} />
+      <AuthProvider>
+        <CarritoProvider>
           
-          {/* Recuperación de contraseña */}
-          <Route path="/recuperar" element={<Recuperar />} />
-          <Route path="/restablecer" element={<Restablecer />} />
+          {/* --- AQUÍ ESTÁ LA SOLUCIÓN: EmpresaProvider DEBE envolver todo --- */}
+          <EmpresaProvider> 
+            
+            {/* Navbar Global (Se oculta en admin o dentro de los layouts específicos si se prefiere) */}
+            {/* En esta arquitectura, los Layouts (KBLayout, etc) ya traen su navbar, 
+                así que ocultamos este global si estamos en una ruta de empresa o admin */}
+            {!isAdminRoute && 
+             !location.pathname.startsWith("/kb") && 
+             !location.pathname.startsWith("/kpbm") && 
+             !location.pathname.startsWith("/sabesa") && 
+             <Navbar />
+            }
 
-          {/* --- PRIVADAS (Requieren Login) --- */}
-          <Route path="/carrito" element={<RequireAuth><Carrito /></RequireAuth>} />
-          <Route path="/mis-pedidos" element={<RequireAuth><MisPedidos /></RequireAuth>} />
-          <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
-          <Route path="/perfil" element={<RequireAuth><Perfil /></RequireAuth>} />
-          
-          {/* CONTACTO AHORA ES PRIVADO */}
-          <Route 
-            path="/contacto" 
-            element={
-              <RequireAuth>
-                <Contacto />
-              </RequireAuth>
-            } 
-          />
+            <Routes>
+              {/* Redirección Inicial a KB */}
+              <Route path="/" element={<Navigate to="/kb" replace />} />
 
-          {/* --- ADMIN (Rutas protegidas) --- */}
-          <Route path="/admin" element={<RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin>}/>
-          <Route path="/admin/productos" element={<RequireAdmin><AdminLayout><AdminProductos /></AdminLayout></RequireAdmin>} />
-          <Route path="/admin/categorias" element={<RequireAdmin><AdminLayout><AdminCategorias /></AdminLayout></RequireAdmin>} />
-          <Route path="/admin/inventario" element={<RequireAdmin><AdminLayout><AdminInventario /></AdminLayout></RequireAdmin>} />
-          <Route path="/admin/pedidos" element={<RequireAdmin><AdminLayout><AdminPedidos /></AdminLayout></RequireAdmin>} />
-          <Route path="/admin/cupones" element={<RequireAdmin><AdminLayout><AdminCupones /></AdminLayout></RequireAdmin>} />
+              {/* === EMPRESA 1: KB COLLECTION === */}
+              <Route path="/kb" element={<KBLayout />}>
+                 <Route index element={<HomeKB />} />
+                 <Route path="productos" element={<Productos />} />
+                 <Route path="producto/:id" element={<ProductoDetalle />} />
+              </Route>
 
-<Route path="/admin/carousel" element={<RequireAdmin><AdminLayout><AdminCarousel /></AdminLayout></RequireAdmin>} />
+              {/* === EMPRESA 2: KPBM === */}
+              <Route path="/kpbm" element={<KPBMLayout />}>
+                 <Route index element={<HomeKPBM />} />
+                 <Route path="productos" element={<Productos />} />
+                 <Route path="producto/:id" element={<ProductoDetalle />} />
+              </Route>
 
-<Route path="/admin/zonas" element={<RequireAdmin><AdminLayout><AdminZonas /></AdminLayout></RequireAdmin>} />
-<Route path="/admin/usuarios" element={<RequireAdmin><AdminLayout><AdminUsuarios /></AdminLayout></RequireAdmin>} />
+              {/* === EMPRESA 3: SABESA === */}
+              <Route path="/sabesa" element={<SabesaLayout />}>
+                 <Route index element={<HomeSabesa />} />
+                 <Route path="productos" element={<Productos />} />
+                 <Route path="producto/:id" element={<ProductoDetalle />} />
+              </Route>
 
-        </Routes>
-      </main>
+              {/* === RUTAS GLOBALES (Login, Carrito, etc) === */}
+              {/* Estas usarán el Navbar Global que pusimos arriba */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/contacto" element={<Contacto />} />
+              <Route path="/carrito" element={<RequireAuth><Carrito /></RequireAuth>} />
+              <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
+              <Route path="/mis-pedidos" element={<RequireAuth><MisPedidos /></RequireAuth>} />
 
-      {/* Solo mostramos Footer si NO es admin */}
-      {!isAdminRoute && <Footer />}
+              {/* === ADMIN === */}
+              <Route path="/admin" element={<RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/productos" element={<RequireAdmin><AdminLayout><AdminProductos /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/categorias" element={<RequireAdmin><AdminLayout><AdminCategorias /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/inventario" element={<RequireAdmin><AdminLayout><AdminInventario /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/pedidos" element={<RequireAdmin><AdminLayout><AdminPedidos /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/cupones" element={<RequireAdmin><AdminLayout><AdminCupones /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/carousel" element={<RequireAdmin><AdminLayout><AdminCarousel /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/zonas" element={<RequireAdmin><AdminLayout><AdminZonas /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/usuarios" element={<RequireAdmin><AdminLayout><AdminUsuarios /></AdminLayout></RequireAdmin>} />
+
+            </Routes>
+
+            {/* Footer Global (oculto en admin) */}
+            {!isAdminRoute && <Footer />}
+
+          </EmpresaProvider>
+          {/* ------------------------------------------------------------- */}
+
+        </CarritoProvider>
+      </AuthProvider>
     </div>
   );
 }

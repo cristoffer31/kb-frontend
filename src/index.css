@@ -379,3 +379,42 @@ a {
     height: 250px;
   }
 }
+
+:root {
+  /* Valores por defecto */
+  --primary-gradient: linear-gradient(135deg, #0061ff 0%, #004aad 100%);
+  --primary-color: #004aad;
+  
+  font-family: 'Poppins', system-ui, sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+a { text-decoration: none; color: inherit; }
+
+/* --- CLASES DINÁMICAS (Se adaptan a la empresa) --- */
+
+/* Fondos */
+.navbar, .footer, .btn-primary, .auth-btn, .btn-checkout, .btn-add-lg, .btn-add-modal {
+  background: var(--primary-gradient) !important;
+  color: white !important;
+  border: none;
+}
+
+/* Textos */
+.precio-grande, .carrito-titulo, .section-title-center, .hero-highlight {
+  color: var(--primary-color) !important;
+}
+
+/* Bordes y Hover */
+.category-card-modern:hover {
+    border-color: var(--primary-color) !important;
+}
+.category-card-modern:hover .cat-icon-modern {
+    background: var(--primary-gradient) !important;
+}
+
+/* --- Layout Base --- */
+.app-container { min-height: 100vh; display: flex; flex-direction: column; }
+/* El padding-top lo maneja cada Layout individualmente */
