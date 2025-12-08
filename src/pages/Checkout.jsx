@@ -5,6 +5,7 @@ import { crearPedido } from "../services/pedidoService";
 import { validarCuponApi } from "../services/CuponService"; 
 import { listarZonas } from "../services/zonaService"; 
 import { useNavigate } from "react-router-dom";
+import { usePayPalScript } from "../hooks/usePayPalScript"; // <--- NUEVO
 import "./Checkout.css";
 import { FaLocationArrow } from "react-icons/fa"; 
 
@@ -12,6 +13,7 @@ export default function Checkout() {
   const { items, total, limpiarCarrito } = useContext(CarritoContext);
   const { isLogged, usuario } = useContext(AuthContext); 
   const navigate = useNavigate();
+  const { loaded: paypalLoaded, error: paypalError } = usePayPalScript(); // <--- NUEVO
 
   // DATOS DINÁMICOS
   const [zonasDisponibles, setZonasDisponibles] = useState([]);
@@ -121,7 +123,7 @@ export default function Checkout() {
 
   // PayPal
   useEffect(() => {
-    if (!window.paypal || !paypalRef.current) return;
+    if (!paypalLoaded || !window.paypal || !paypalRef.current) return; // <--- MODIFICADO
     if (buttonsInstance.current) { try { buttonsInstance.current.close(); } catch (e) {} paypalRef.current.innerHTML = ""; }
 
     const valorPaypal = totalFinalPagar.toFixed(2);
@@ -169,7 +171,7 @@ export default function Checkout() {
         if (buttonsInstance.current) { try { buttonsInstance.current.close(); } catch (e) {} buttonsInstance.current = null; }
         if (paypalRef.current) paypalRef.current.innerHTML = "";
     };
-  }, [totalFinalPagar]); 
+  }, [totalFinalPagar, paypalLoaded]); // <--- MODIFICADO 
 
   // --- GUARDAR PEDIDO Y ENVIAR WHATSAPP ---
   async function guardarPedido(paypalId) {
@@ -193,7 +195,7 @@ export default function Checkout() {
         const idPedido = respuesta.id || "N/A";
 
         // 2. Generar mensaje de WhatsApp
-        const numeroVentas = "50370000000"; // <--- ¡PON TU NÚMERO AQUÍ!
+        const numeroVentas = import.meta.env.VITE_WHATSAPP_NUMBER || "50370000000";
         
         let mensajeWA = `*¡Hola! Nuevo pedido en KB Collection.*\n\n`;
         mensajeWA += `*Pedido #:* ${idPedido}\n`;
@@ -312,7 +314,9 @@ export default function Checkout() {
         </div>
 
         <div className="checkout-section">
-            <h3>Pagar</h3>
+            <h3>💳 Pagar</h3>
+            {paypalError && <div className="checkout-msg error">⚠️ {paypalError}. Verifica tu configuración.</div>}
+            {!paypalLoaded && !paypalError && <div className="checkout-msg">Cargando métodos de pago...</div>}
             <div style={{ position: 'relative', minHeight: '150px' }}>
                 {procesando && <div className="overlay-loading">Procesando...</div>}
                 <div ref={paypalRef}></div>

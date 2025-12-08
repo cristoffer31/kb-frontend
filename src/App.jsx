@@ -4,7 +4,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 // Contextos
 import { AuthProvider } from "./context/AuthContext";
 import { CarritoProvider } from "./context/CarritoContext";
-import { EmpresaProvider } from "./context/EmpresaContext"; // <--- IMPORTANTE
+import { EmpresaProvider } from "./context/EmpresaContext"; 
 
 // Componentes Globales
 import Navbar from "./components/Navbar";
@@ -48,24 +48,22 @@ import { RequireAdmin } from "./components/RequireAdmin";
 function App() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
+  
+  // Detectar si estamos dentro de una empresa para ocultar componentes globales duplicados
+  const isEmpresaRoute = 
+      location.pathname.startsWith("/kb") || 
+      location.pathname.startsWith("/kpbm") || 
+      location.pathname.startsWith("/sabesa");
 
   return (
     <div className="app-container">
       <AuthProvider>
         <CarritoProvider>
           
-          {/* --- AQUÍ ESTÁ LA SOLUCIÓN: EmpresaProvider DEBE envolver todo --- */}
           <EmpresaProvider> 
             
-            {/* Navbar Global (Se oculta en admin o dentro de los layouts específicos si se prefiere) */}
-            {/* En esta arquitectura, los Layouts (KBLayout, etc) ya traen su navbar, 
-                así que ocultamos este global si estamos en una ruta de empresa o admin */}
-            {!isAdminRoute && 
-             !location.pathname.startsWith("/kb") && 
-             !location.pathname.startsWith("/kpbm") && 
-             !location.pathname.startsWith("/sabesa") && 
-             <Navbar />
-            }
+            {/* Navbar Global: Solo se muestra en rutas generales (Login, Carrito, etc) */}
+            {!isAdminRoute && !isEmpresaRoute && <Navbar />}
 
             <Routes>
               {/* Redirección Inicial a KB */}
@@ -93,7 +91,6 @@ function App() {
               </Route>
 
               {/* === RUTAS GLOBALES (Login, Carrito, etc) === */}
-              {/* Estas usarán el Navbar Global que pusimos arriba */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/contacto" element={<Contacto />} />
@@ -114,11 +111,10 @@ function App() {
 
             </Routes>
 
-            {/* Footer Global (oculto en admin) */}
-            {!isAdminRoute && <Footer />}
+            {/* Footer Global: Oculto en Admin Y en rutas de empresa (porque ya tienen el suyo) */}
+            {!isAdminRoute && !isEmpresaRoute && <Footer />}
 
           </EmpresaProvider>
-          {/* ------------------------------------------------------------- */}
 
         </CarritoProvider>
       </AuthProvider>
