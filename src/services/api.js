@@ -12,11 +12,19 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (error) => {
+    // Solo actuamos si es un 401 REAL y NO estamos intentando loguearnos
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      if (!window.location.pathname.includes("/login")) {
-         window.location.href = "/login";
+      const isLoginRequest = error.config.url.includes("/auth/login");
+      
+      if (!isLoginRequest) {
+          console.warn("Sesión caducada o token inválido.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          
+          // Solo redirigir si no estamos ya en la página de login
+          if (!window.location.pathname.includes("/login")) {
+              window.location.href = "/login";
+          }
       }
     }
     return Promise.reject(error);

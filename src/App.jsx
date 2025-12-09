@@ -59,7 +59,6 @@ function App() {
     <div className="app-container">
       <AuthProvider>
         <CarritoProvider>
-          
           <EmpresaProvider> 
             
             {/* Navbar Global: Solo se muestra en rutas generales (Login, Carrito, etc) */}
@@ -115,7 +114,6 @@ function App() {
             {!isAdminRoute && !isEmpresaRoute && <Footer />}
 
           </EmpresaProvider>
-
         </CarritoProvider>
       </AuthProvider>
     </div>

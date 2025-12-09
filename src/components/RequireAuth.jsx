@@ -6,8 +6,18 @@ import { AuthContext } from "../context/AuthContext";
 export function RequireAuth({ children }) {
   const { isLogged, cargandoAuth } = useContext(AuthContext);
 
-  if (cargandoAuth) return <div>Cargando...</div>;
-  if (!isLogged) return <Navigate to="/login" replace />;
+  console.log("🛡️ RequireAuth evaluando:", { isLogged, cargandoAuth });
 
+  if (cargandoAuth) {
+    console.log("⏳ RequireAuth: Cargando...");
+    return <div>Cargando...</div>;
+  }
+  
+  if (!isLogged) {
+    console.log("🚫 RequireAuth: No autenticado, redirigiendo a /login");
+    return <Navigate to="/login" replace />;
+  }
+
+  console.log("✅ RequireAuth: Autenticado, mostrando contenido");
   return children;
 }

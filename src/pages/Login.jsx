@@ -12,20 +12,36 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  console.log("🔵 Componente Login renderizado", { email, error });
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
     try {
-      await login(email, password);
-      navigate("/");
+      console.log("🚀 Intentando login con:", email);
+      const success = await login(email, password);
+      
+      if (success) {
+        console.log("✅ Login exitoso, redirigiendo a /kb");
+        // Navegamos directamente a /kb en lugar de /
+        navigate("/kb", { replace: true }); 
+      }
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error en login:", err);
 
+      // Lógica de errores mejorada:
+      // 1. Si el backend envía un mensaje específico ("error": "..."), lo mostramos.
       if (err.response && err.response.data && err.response.data.error) {
         setError(err.response.data.error);
-      } else {
-        setError("Error al iniciar sesión. Intenta de nuevo.");
+      } 
+      // 2. Si es un 401 genérico (Credenciales malas)
+      else if (err.response && err.response.status === 401) {
+        setError("Correo o contraseña incorrectos.");
+      } 
+      // 3. Error de conexión u otro
+      else {
+        setError(err.message || "No se pudo iniciar sesión. Verifica tu conexión.");
       }
     }
   }
@@ -61,6 +77,7 @@ export default function Login() {
             Entrar
           </button>
         </form>
+        
         <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '0.9rem' }}>
           <Link to="/recuperar" style={{ color: '#64748b', textDecoration: 'none' }}>¿Olvidaste tu contraseña?</Link>
         </div>
