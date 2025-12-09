@@ -1,4 +1,3 @@
-// src/pages/Register.jsx
 import React, { useState, useContext } from "react";
 import "./Auth.css";
 import { AuthContext } from "../context/AuthContext";
@@ -11,6 +10,7 @@ export default function Register() {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [telefono, setTelefono] = useState(""); // <--- NUEVO ESTADO
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
 
@@ -20,26 +20,21 @@ export default function Register() {
     setOk("");
 
     try {
-      await register(nombre, email, password);
-      setOk("Registro exitoso. Ahora puedes iniciar sesión.");
-      setTimeout(() => navigate("/login"), 1500);
+      // Enviamos también el teléfono
+      await register(nombre, email, password, telefono);
+      setOk("Registro exitoso. Te hemos enviado un SMS/Correo de verificación.");
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       console.error("Error de registro:", err);
 
-      // --- LÓGICA PARA LEER EL ERROR REAL ---
       if (err.response && err.response.data) {
-        // 1. Error personalizado del backend (ej: "El correo ya existe")
         if (err.response.data.error) {
             setError(err.response.data.error);
-        } 
-        // 2. Error de validación de Quarkus (ej: Contraseña corta)
-        else if (err.response.data.parameterViolations) {
+        } else if (err.response.data.parameterViolations) {
             const msg = err.response.data.parameterViolations[0].message;
             setError(msg);
-        }
-        // 3. Otros errores
-        else {
-            setError("Datos inválidos. Revisa que el correo y contraseña sean correctos.");
+        } else {
+            setError("Datos inválidos. Revisa la información.");
         }
       } else {
         setError("No se pudo conectar con el servidor.");
@@ -71,6 +66,16 @@ export default function Register() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+          />
+          
+          {/* --- NUEVO INPUT DE TELÉFONO --- */}
+          <input
+            type="tel"
+            placeholder="Teléfono (ej: +50370000000)"
+            required
+            value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
+            title="Incluye el código de área, ej: +503..."
           />
 
           <input

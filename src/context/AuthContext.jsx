@@ -38,17 +38,18 @@ export function AuthProvider({ children }) {
     setUsuario(user);
   }
 
-  async function register(nombre, email, password) {
-    await registerApi(nombre, email, password);
+  // --- ACTUALIZADO: Acepta teléfono ---
+  async function register(nombre, email, password, telefono) {
+    await registerApi(nombre, email, password, telefono);
   }
 
   function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUsuario(null);
+    window.location.href = "/login"; // Redirección forzada para limpiar estados
   }
 
-  // --- CORRECCIÓN: AMBOS ROLES SON ADMIN ---
   const esAdmin = usuario?.role === "ADMIN" || usuario?.role === "SUPER_ADMIN";
 
   return (
@@ -61,7 +62,7 @@ export function AuthProvider({ children }) {
         register,
         logout,
         isLogged: !!usuario,
-        isAdmin: esAdmin, // <--- Esto permitirá el acceso a las rutas protegidas
+        isAdmin: esAdmin,
       }}
     >
       {children}

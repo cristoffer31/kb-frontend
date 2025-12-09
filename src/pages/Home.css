@@ -139,3 +139,144 @@ section { margin-bottom: 60px; }
   .ofertas-section-pro { padding: 25px 15px; }
   .product-grid-normal { grid-template-columns: repeat(2, 1fr); gap: 15px; } /* 2 columnas en móvil */
 }
+
+/* ESTILO PARA LOS BOTONES DE CAMBIO DE EMPRESA EN EL HERO */
+.btn-hero {
+  background-color: white;
+  color: #334155; /* Color de texto oscuro por defecto */
+  padding: 12px 24px;
+  border-radius: 50px; /* Bordes muy redondos */
+  border: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-hero:hover {
+  transform: translateY(-3px); /* Se eleva un poco */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.btn-hero:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* En móvil, que se apilen uno debajo del otro */
+@media (max-width: 600px) {
+  .home-hero-left div {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .btn-hero {
+    width: 100%;
+    justify-content: center;
+  }
+}
+/* --- NAVEGACIÓN SOLO LOGOS (Versión Grande y Proporcionada) --- */
+
+.nav-brands-container {
+  display: flex;
+  flex-direction: row; /* Asegura que vayan uno al lado del otro */
+  gap: 30px;           /* Buen espacio de separación entre ellos */
+  margin-top: 45px;    /* Más aire con respecto al texto de arriba */
+  align-items: center;
+  justify-content: flex-start; /* Alineados a la izquierda */
+  flex-wrap: wrap;     /* Si la pantalla es muy pequeña, bajan ordenadamente */
+}
+
+.brand-card-link {
+  /* TAMAÑO AUMENTADO: Antes 100px, ahora 120px */
+  width: 120px;
+  height: 120px;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Efecto Vidrio Premium */
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4); /* Borde un poco más grueso */
+  border-radius: 28px; /* Bordes más redondeados acorde al nuevo tamaño */
+  backdrop-filter: blur(16px);
+  
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efecto rebote suave */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.brand-card-link img {
+  width: 65%;  /* El logo ocupa buen espacio dentro del cuadro */
+  height: 65%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+  transition: transform 0.4s ease;
+}
+
+/* EFECTOS HOVER (Al pasar el mouse) */
+.brand-card-link:hover {
+  background: white; 
+  transform: translateY(-12px) scale(1.05); /* Sube y crece ligeramente */
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); /* Sombra profunda */
+  border-color: white;
+}
+
+.brand-card-link:hover img {
+  transform: scale(1.15); /* El logo hace un "pop" hacia afuera */
+}
+
+/* ETIQUETA FLOTANTE (Tooltip mejorado) */
+.brand-card-link::after {
+  content: attr(data-tooltip); 
+  position: absolute;
+  bottom: -40px; /* Posición inicial oculta */
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  
+  background: rgba(15, 23, 42, 0.95); /* Fondo oscuro casi negro */
+  color: white;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Mostrar etiqueta al hover */
+.brand-card-link:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0); /* Sube suavemente a su lugar */
+  bottom: -50px;
+}
+
+/* RESPONSIVE: Ajuste para móviles */
+@media (max-width: 600px) {
+  .nav-brands-container {
+    justify-content: center; /* Centrar los botones en celular */
+    gap: 20px;
+  }
+  
+  .brand-card-link {
+    width: 110px; /* Un poquito más pequeños en móvil para que quepan bien */
+    height: 110px;
+  }
+}

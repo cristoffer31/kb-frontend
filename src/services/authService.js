@@ -1,16 +1,18 @@
 import api from "./api";
 
 export async function loginApi(email, password) {
-  // 1. Hacemos login
   const res = await api.post("/auth/login", { email, password });
-
-  // 2. El backend ya nos devuelve { token: "...", usuario: { ... } }
-  // Así que retornamos los datos directamente sin llamar a /me
   return res.data;
 }
 
-export async function registerApi(nombre, email, password) {
-  return api.post("/auth/register", { nombre, email, password });
+// --- ACTUALIZADO: Envía el objeto completo con teléfono ---
+export async function registerApi(nombre, email, password, telefono) {
+  return api.post("/auth/register", { 
+      nombre, 
+      email, 
+      password,
+      telefono // <--- Nuevo campo
+  });
 }
 
 export async function meApi() {
