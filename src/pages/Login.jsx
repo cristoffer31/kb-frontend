@@ -1,4 +1,3 @@
-// src/pages/Login.jsx
 import React, { useState, useContext } from "react";
 import "./Auth.css";
 import { AuthContext } from "../context/AuthContext";
@@ -12,36 +11,27 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  console.log("🔵 Componente Login renderizado", { email, error });
-
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
     try {
-      console.log("🚀 Intentando login con:", email);
-      const success = await login(email, password);
+      await login(email, password);
       
-      if (success) {
-        console.log("✅ Login exitoso, redirigiendo a /kb");
-        // Navegamos directamente a /kb en lugar de /
-        navigate("/kb", { replace: true }); 
-      }
-    } catch (err) {
-      console.error("❌ Error en login:", err);
+      // Pequeña pausa técnica para asegurar que el AuthContext se actualizó
+      // antes de redirigir al Home.
+      setTimeout(() => {
+          navigate("/"); 
+      }, 100);
 
-      // Lógica de errores mejorada:
-      // 1. Si el backend envía un mensaje específico ("error": "..."), lo mostramos.
+    } catch (err) {
+      console.error(err);
       if (err.response && err.response.data && err.response.data.error) {
         setError(err.response.data.error);
-      } 
-      // 2. Si es un 401 genérico (Credenciales malas)
-      else if (err.response && err.response.status === 401) {
+      } else if (err.response && err.response.status === 401) {
         setError("Correo o contraseña incorrectos.");
-      } 
-      // 3. Error de conexión u otro
-      else {
-        setError(err.message || "No se pudo iniciar sesión. Verifica tu conexión.");
+      } else {
+        setError("Error de conexión. Intenta de nuevo.");
       }
     }
   }

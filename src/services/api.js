@@ -12,19 +12,21 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    // Solo actuamos si es un 401 REAL y NO estamos intentando loguearnos
+    // Solo actuamos si es un error 401 REAL
     if (error.response && error.response.status === 401) {
-      const isLoginRequest = error.config.url.includes("/auth/login");
       
-      if (!isLoginRequest) {
+      // IMPORTANTE: No hacer nada si el error viene del mismo Login 
+      // (para que Login.jsx pueda mostrar "Contraseña incorrecta")
+      if (!error.config.url.includes("/auth/login")) {
           console.warn("Sesión caducada o token inválido.");
+          
+          // Borramos credenciales
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           
-          // Solo redirigir si no estamos ya en la página de login
-          if (!window.location.pathname.includes("/login")) {
-              window.location.href = "/login";
-          }
+          // NO recargamos la página con window.location.href
+          // Simplemente dejamos que el usuario siga como "invitado"
+          // Si intenta entrar a una zona privada, el router lo detendrá.
       }
     }
     return Promise.reject(error);
